@@ -1,0 +1,17 @@
+/*
+ * WordCount.cpp
+ *
+ *  Created on: 2023. 11. 22.
+ *      Author: sehyeon
+ */
+
+#include "MapReduceFramework.h"
+#include "WordCountMapper.cpp"
+#include "WordCountReducer.cpp"
+#include <iostream>
+
+int main() {
+	WordCountMapper mapper;
+	WordCountReducer reducer;
+
+}

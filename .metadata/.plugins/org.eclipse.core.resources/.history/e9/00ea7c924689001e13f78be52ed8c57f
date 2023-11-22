@@ -1,0 +1,20 @@
+/*
+ * Reducer.cpp
+ *
+ *  Created on: 2023. 11. 22.
+ *      Author: sehyeon
+ */
+
+#ifndef REDUCER_H_
+#define REDUCER_H_
+#pragma once
+#include <string>
+#include <vector>
+
+class Reducer {
+public:
+	virtual ~Reducer() = default;
+	virtual void reduce(const std::string& key, const std::vector<int>& values, int& output) = 0;
+};
+
+#endif /* REDUCER_H_ */

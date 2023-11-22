@@ -1,0 +1,15 @@
+/*
+ * Reducer.cpp
+ *
+ *  Created on: 2023. 11. 22.
+ *      Author: sehyeon
+ */
+
+#pragma once
+#include <string>
+#include <vector>
+
+class Reducer {
+public:
+	virtual void Reduce(const std::string& key, const std::vector<int>& values, int& output);
+};

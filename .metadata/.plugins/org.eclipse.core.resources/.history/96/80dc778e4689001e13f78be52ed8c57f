@@ -1,0 +1,22 @@
+/*
+ * MapReduceFramework.cpp
+ *
+ *  Created on: 2023. 11. 22.
+ *      Author: sehyeon
+ */
+
+#pragma once
+#include <vector>
+
+#include "Mapper.h"
+#include "Reducer.h"
+
+class MapReduceFramework {
+public:
+    MapReduceFramework(Mapper* mapper, Reducer* reducer);
+    void run(const std::vector<std::string>& input, std::vector<std::pair<std::string, int>>& output);
+    // TODO : run 메소드의 인자 수정
+private:
+    Mapper* mapper;
+    Reducer* reducer;
+};

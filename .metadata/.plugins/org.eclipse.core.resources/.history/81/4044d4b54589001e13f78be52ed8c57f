@@ -1,0 +1,14 @@
+/*
+ * MapReduceFramework.cpp
+ *
+ *  Created on: 2023. 11. 22.
+ *      Author: sehyeon
+ */
+
+#include "MapReduceFramework.h"
+
+MapReduceFramework::MapReduceFramework(Mapper* m, Reducer* r) : mapper(m), reducer(r) {}
+
+void MapReduceFramework::run(const std::vector<std::string>& input, std::vector<std::pair<std::string, int>>& output) {
+    // TODO: MapReduce Framework 실행 로직을 구현
+}

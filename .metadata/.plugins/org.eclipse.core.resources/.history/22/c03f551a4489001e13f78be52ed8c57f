@@ -1,0 +1,15 @@
+/*
+ * Mapper.cpp
+ *
+ *  Created on: 2023. 11. 22.
+ *      Author: sehyeon
+ */
+
+#pragma once
+#include <string>
+#include <vector>
+
+class Mapper {
+public:
+	virtual void map(const std::string& input, std::vector<std::pair<std::string, int>>& output);
+};

@@ -1,0 +1,20 @@
+/*
+ * MapReduceFramework.cpp
+ *
+ *  Created on: 2023. 11. 22.
+ *      Author: sehyeon
+ */
+
+#pragma once
+#include "Mapper.cpp"
+#include <vector>
+#include "Reducer.h"
+
+class MapReduceFramework {
+public:
+    MapReduceFramework(Mapper* mapper, Reducer* reducer);
+    void Run(const std::vector<std::string>& input, std::vector<std::pair<std::string, int>>& output);
+private:
+    Mapper* mapper;
+    Reducer* reducer;
+};

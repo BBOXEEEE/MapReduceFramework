@@ -1,0 +1,16 @@
+/*
+ * WordCountReducer.cpp
+ *
+ *  Created on: 2023. 11. 22.
+ *      Author: sehyeon
+ */
+
+#include "Reducer.h"
+#include <algorithm>
+
+class WordCountReducer : public Reducer {
+public:
+	void reducer(const std::string& key, const std::vector<int>& values, int& output) {
+		output = std::accumulate(values.begin(), values.end(), 0);
+	}
+};

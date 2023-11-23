@@ -9,15 +9,15 @@
 
 #include <sstream>
 #include <iostream>
+#include <vector>
 
 class WordCountMapper : public Mapper {
 public:
 	void map(const std::string& input, std::vector<std::pair<std::string, int>>& output) {
-		// TODO : map 메소드 수정 -> 구분자를 통해 split, 단어별 <key, value> 쌍으로 output.push_back
 		std::istringstream iss(input);
 		std::string word;
 		while (iss >> word) {
-			output.push_back({word, 1});
+			output.push_back({word, 1}); // @suppress("Invalid arguments")
 		}
 	}
 };

@@ -10,16 +10,12 @@
 #include "../WordCount/WordCountReducer.cpp"
 
 #include <iostream>
+#include <vector>
 
-int main() {
+int main(int argc, char* argv[]) {
 	WordCountMapper mapper;
 	WordCountReducer reducer;
 	MapReduceFramework framework(&mapper, &reducer);
 
-	/*
-	* TODO : WordCount 예제를 실행하도록 MapReduceFramework.run() 메소드 호출
-	* 1) Input File Path & Output File Path 입력
-	* 2) MapReduceFramework.run()
-	*/
-
+	framework.run(argv[1], argv[2]);
 }

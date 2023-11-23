@@ -7,10 +7,12 @@
 
 #include "../MapReduceFramework/Reducer.h"
 #include <algorithm>
+#include <numeric>
 
 class WordCountReducer : public Reducer {
 public:
 	void reduce(const std::string& key, const std::vector<int>& values, int& output) {
 		// TODO : reduce 메소드 구현
+		output = std::accumulate(values.begin(), values.end(), 0);
 	}
 };

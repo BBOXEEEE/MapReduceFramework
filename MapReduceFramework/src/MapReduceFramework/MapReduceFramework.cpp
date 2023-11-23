@@ -7,8 +7,133 @@
 
 #include "../MapReduceFramework/MapReduceFramework.h"
 
+#include <iostream>
+#include <mutex>
+#include <thread>
+#include <vector>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <algorithm>
+#include <unordered_map>
+
 MapReduceFramework::MapReduceFramework(Mapper* m, Reducer* r) : mapper(m), reducer(r) {}
 
-void MapReduceFramework::run(const std::vector<std::string>& input, std::vector<std::pair<std::string, int>>& output) {
+/*
+void removeUnwantedCharacters(std::string& str) {
+    // Define the set of unwanted characters
+    const std::string unwantedChars = ",.'\"";
+
+    // Remove unwanted characters from the string
+    str.erase(std::remove_if(str.begin(), str.end(), [&unwantedChars](char c) {
+        return unwantedChars.find(c) != std::string::npos;
+    }), str.end());
+} */
+
+
+void worker(char* inputPath, int start, int end, Mapper* mapper, std::mutex& m, std::vector<std::pair<std::string, int>>& output) {
+	m.lock();
+	std::ifstream inputFile(inputPath);
+	if (!inputFile.is_open()) {
+		std::cerr << "Error: Unable to open file " << inputPath << std::endl;
+		m.unlock();
+		return;
+	}
+
+	// 이전에는 파일을 열고 읽는 부분을 worker 함수로 이동
+	std::string line;
+	int currentLine = 0;
+	while (getline(inputFile, line) && currentLine < end) {
+		if (currentLine >= start) {
+			//removeUnwantedCharacters(line);
+			// mapper.map 함수 호출
+			std::cout << line << std::endl;
+			mapper->map(line, output);
+		}
+		++currentLine;
+	}
+
+	inputFile.close();
+
+	m.unlock();
+
+}
+
+void MapReduceFramework::run(char* inputPath, char* outputPath) {
     // TODO: MapReduce Framework 실행 로직 구현
+
+	std::vector<std::thread> workers;
+	std::mutex m;
+
+	std::vector<std::pair<std::string, int>> mapOutput;
+
+	std::cout << inputPath << std::endl;
+	std::cout << outputPath << std::endl;
+
+	// TODO : 입력 파일 총 길이 라인 수
+	// 이걸 몇으로 나눌건지 => 블록 개수
+	// 스레드의 수 = 블록의 수
+	// workers[i].join for문 범위도 변수로!
+
+	for (int i=0; i<=40; i+=10) {
+		workers.push_back(std::thread(worker, inputPath, i, i+10, mapper, std::ref(m), std::ref(mapOutput)));
+	}
+
+	for (int i=0; i<5; ++i) {
+		workers[i].join();
+	}
+
+	for (const auto& pair : mapOutput) {
+		std::cout << "Key: " << pair.first << " Value: " << pair.second << std::endl;
+	}
+
+	std::unordered_map<std::string, std::vector<int>> shuffledResults;
+
+	for (const auto& pair : mapOutput) {
+	        const std::string& key = pair.first;
+	        int value = pair.second;
+
+	        // Use emplace to insert the key if not present and get a reference to its vector
+	        auto& valueVector = shuffledResults.emplace(key, std::vector<int>{}).first->second;
+
+	        // Add the value to the vector
+	        valueVector.push_back(value);
+	    }
+
+	    // Print the shuffledResults for verification
+	    for (const auto& entry : shuffledResults) {
+	        std::cout << "Key: " << entry.first << ", Values: ";
+	        for (const auto& value : entry.second) {
+	            std::cout << value << " ";
+	        }
+	        std::cout << std::endl;
+	    }
+
+	std::cout << "===============" << std::endl;
+	for (const auto& entry : shuffledResults) {
+		std::cout << "Key: " << entry.first << ", Values: ";
+
+		// Iterate through the vector associated with the key
+		for (const auto& value : entry.second) {
+			std::cout << value << " ";
+		}
+
+		std::cout << std::endl;
+	}
+
+	std::vector<std::pair<std::string, int>> output;
+
+	output.clear();
+
+	for (const auto& entry : shuffledResults) {
+		std::vector<int> values = entry.second;
+		int reducedValue;
+		reducer->reduce(entry.first, values, reducedValue);
+		output.push_back({entry.first, reducedValue}); // @suppress("Invalid arguments")
+	}
+
+	std::cout << "===============" << std::endl;
+	for (const auto& pair : output) {
+			std::cout << "Key: " << pair.first << " Value: " << pair.second << std::endl;
+		}
 }

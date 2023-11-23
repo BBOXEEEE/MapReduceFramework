@@ -13,7 +13,7 @@
 class MapReduceFramework {
 public:
     MapReduceFramework(Mapper* mapper, Reducer* reducer);
-    void run(const std::vector<std::string>& input, std::vector<std::pair<std::string, int>>& output);
+    void run(char* inputPath, char* outputPath);
     // TODO : run 메소드의 인자 수정
 private:
     Mapper* mapper;

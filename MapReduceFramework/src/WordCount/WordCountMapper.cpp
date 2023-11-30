@@ -13,11 +13,11 @@
 
 class WordCountMapper : public Mapper {
 private:
-	std::string word;
+	std::wstring word;
 	int one = 1;
 public:
-	void map(const std::string& input, std::vector<std::pair<std::string, int>>& output) {
-		std::istringstream iss(input);
+	void map(const std::wstring& input, std::vector<std::pair<std::wstring, int>>& output) {
+		std::wistringstream iss(input);
 		while (iss >> word) {
 			output.push_back({word, one}); // @suppress("Invalid arguments")
 		}

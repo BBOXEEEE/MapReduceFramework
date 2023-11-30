@@ -4,18 +4,39 @@
  * @author 10조(김요셉, 박세현, 원현섭, 조승대)
  * MapReduceFramework.h
  */
-#pragma once
+
+#ifndef MAPREDUCEFRAMEWORK_H_
+#define MAPREDUCEFRAMEWORK_H_
+
 #include "../MapReduceFramework/Mapper.h"
 #include "../MapReduceFramework/Reducer.h"
 
 #include <vector>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <unordered_map>
 
 class MapReduceFramework {
 public:
     MapReduceFramework(Mapper* mapper, Reducer* reducer);
     void run(char* inputPath, char* outputPath);
-    // TODO : run 메소드의 인자 수정
+
 private:
+    void worker(char* inputPath, long start, long end, std::vector<std::pair<std::string, int>>& mapOutput);
+    void reduceThread(const std::unordered_map<std::string, std::vector<int>>& shuffledResults, std::vector<std::pair<std::string, int>>& output);
+
     Mapper* mapper;
     Reducer* reducer;
+
+    std::mutex m;
+    std::mutex shuffledResultsMutex;
+    std::condition_variable cv;
+    std::vector<std::thread> mapWorkers;
+    std::vector<std::thread> reduceWorkers;
+    std::vector<std::pair<std::string, int>> mapOutput;
+    std::unordered_map<std::string, std::vector<int>> shuffledResults;
+    std::vector<std::pair<std::string, int>> output;
 };
+
+#endif /* MAPREDUCEFRAMEWORK_H_ */

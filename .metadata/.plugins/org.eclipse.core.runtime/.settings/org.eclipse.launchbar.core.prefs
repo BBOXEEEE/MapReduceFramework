@@ -4,5 +4,5 @@ LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/name
 LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/os=macosx
 configDescList=org.eclipse.launchbar.core.descriptorType.default\:MapReduceFramework
 eclipse.preferences.version=1
-org.eclipse.launchbar.core.descriptorType.default\:MapReduceFramework/activeLaunchMode=run
+org.eclipse.launchbar.core.descriptorType.default\:MapReduceFramework/activeLaunchMode=profile
 org.eclipse.launchbar.core.descriptorType.default\:MapReduceFramework/activeLaunchTarget=org.eclipse.launchbar.core.launchTargetType.local\:Local

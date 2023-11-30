@@ -12,14 +12,14 @@
 #include <vector>
 
 class WordCountMapper : public Mapper {
+private:
+	std::string word;
+	int one = 1;
 public:
 	void map(const std::string& input, std::vector<std::pair<std::string, int>>& output) {
 		std::istringstream iss(input);
-		std::string word;
 		while (iss >> word) {
-			output.push_back({word, 1}); // @suppress("Invalid arguments")
+			output.push_back({word, one}); // @suppress("Invalid arguments")
 		}
 	}
 };
-
-

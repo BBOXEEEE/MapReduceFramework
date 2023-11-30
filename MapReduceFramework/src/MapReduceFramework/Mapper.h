@@ -7,7 +7,7 @@
 
 #ifndef MAPPER_H_
 #define MAPPER_H_
-#pragma once
+
 #include <string>
 #include <vector>
 

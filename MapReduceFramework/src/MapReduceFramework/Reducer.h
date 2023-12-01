@@ -14,7 +14,7 @@
 class Reducer {
 public:
 	virtual ~Reducer() = default;
-	virtual void reduce(const std::wstring& key, const std::vector<int>& values, int& output) = 0;
+	virtual void reduce(const std::string& key, const std::vector<int>& values, int& output) = 0;
 };
 
 #endif /* REDUCER_H_ */

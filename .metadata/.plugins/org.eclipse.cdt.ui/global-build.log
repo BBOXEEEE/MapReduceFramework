@@ -1,5 +1,26 @@
-20:10:01 **** Incremental Build of configuration Debug for project MapReduceFramework ****
+16:16:30 **** Clean-only build of configuration Debug for project MapReduceFramework ****
+make clean 
+rm -rf ./src/WordCount/WordCount.d ./src/WordCount/WordCount.o ./src/WordCount/WordCountMapper.d ./src/WordCount/WordCountMapper.o ./src/WordCount/WordCountReducer.d ./src/WordCount/WordCountReducer.o
+rm -rf ./src/MapreduceFramework/MapReduceFramework.d ./src/MapreduceFramework/MapReduceFramework.o
+rm -rf MapReduceFramework
+ 
+16:16:30 **** Incremental Build of configuration Debug for project MapReduceFramework ****
 make all 
+Building file: ../src/WordCount/WordCount.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++17 -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/WordCount/WordCount.d" -MT"src/WordCount/WordCount.o" -o "src/WordCount/WordCount.o" "../src/WordCount/WordCount.cpp"
+Finished building: ../src/WordCount/WordCount.cpp
+ 
+Building file: ../src/WordCount/WordCountMapper.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++17 -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/WordCount/WordCountMapper.d" -MT"src/WordCount/WordCountMapper.o" -o "src/WordCount/WordCountMapper.o" "../src/WordCount/WordCountMapper.cpp"
+Finished building: ../src/WordCount/WordCountMapper.cpp
+ 
+Building file: ../src/WordCount/WordCountReducer.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++17 -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/WordCount/WordCountReducer.d" -MT"src/WordCount/WordCountReducer.o" -o "src/WordCount/WordCountReducer.o" "../src/WordCount/WordCountReducer.cpp"
+Finished building: ../src/WordCount/WordCountReducer.cpp
+ 
 Building file: ../src/MapreduceFramework/MapReduceFramework.cpp
 Invoking: GCC C++ Compiler
 g++ -std=c++17 -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/MapreduceFramework/MapReduceFramework.d" -MT"src/MapreduceFramework/MapReduceFramework.o" -o "src/MapreduceFramework/MapReduceFramework.o" "../src/MapreduceFramework/MapReduceFramework.cpp"

@@ -23,8 +23,8 @@ public:
     void run(char* inputPath, char* outputPath);
 
 private:
-    void worker(char* inputPath, long start, long end, std::vector<std::pair<std::wstring, int>>& mapOutput);
-    void reduceThread(const std::unordered_map<std::wstring, std::vector<int>>& shuffledResults, long start, long end, std::vector<std::pair<std::wstring, int>>& output);
+    void worker(char* inputPath, long start, long end, std::vector<std::pair<std::string, int>>& mapOutput);
+    void reduceThread(const std::unordered_map<std::string, std::vector<int>>& shuffledResults, long start, long end, std::vector<std::pair<std::string, int>>& output);
 
     Mapper* mapper;
     Reducer* reducer;
@@ -34,8 +34,8 @@ private:
     std::condition_variable cv;
     std::vector<std::thread> mapWorkers;
     std::vector<std::thread> reduceWorkers;
-    std::vector<std::pair<std::wstring, int>> mapOutput;
-    std::unordered_map<std::wstring, std::vector<int>> shuffledResults;
+    std::vector<std::pair<std::string, int>> mapOutput;
+    std::unordered_map<std::string, std::vector<int>> shuffledResults;
 };
 
 #endif /* MAPREDUCEFRAMEWORK_H_ */

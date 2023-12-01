@@ -14,7 +14,7 @@
 class Mapper {
 public:
 	virtual ~Mapper() = default;
-	virtual void map(const std::wstring& input, std::vector<std::pair<std::wstring, int>>& output) = 0;
+	virtual void map(const std::string& input, std::vector<std::pair<std::string, int>>& output) = 0;
 };
 
 #endif /* MAPPER_H_ */

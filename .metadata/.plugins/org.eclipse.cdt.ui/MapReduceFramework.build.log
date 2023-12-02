@@ -1,4 +1,4 @@
-16:16:30 **** Incremental Build of configuration Debug for project MapReduceFramework ****
+04:29:12 **** Incremental Build of configuration Debug for project MapReduceFramework ****
 make all 
 Building file: ../src/WordCount/WordCount.cpp
 Invoking: GCC C++ Compiler
@@ -26,5 +26,5 @@ g++  -o "MapReduceFramework"  ./src/WordCount/WordCount.o ./src/WordCount/WordCo
 Finished building target: MapReduceFramework
  
 
-16:16:34 Build Finished. 0 errors, 0 warnings. (took 3s.952ms)
+04:29:14 Build Finished. 0 errors, 0 warnings. (took 2s.651ms)
 

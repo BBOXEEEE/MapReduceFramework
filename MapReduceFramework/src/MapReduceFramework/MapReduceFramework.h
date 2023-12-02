@@ -19,23 +19,45 @@
 
 class MapReduceFramework {
 public:
-    MapReduceFramework(Mapper* mapper, Reducer* reducer);
+    MapReduceFramework(Mapper* mapper, Reducer* reducer) : mapper(mapper), reducer(reducer) {} ;
     void run(char* inputPath, char* outputPath);
 
 private:
-    void worker(char* inputPath, long start, long end, std::vector<std::pair<std::string, int>>& mapOutput);
-    void reduceThread(const std::unordered_map<std::string, std::vector<int>>& shuffledResults, long start, long end, std::vector<std::pair<std::string, int>>& output);
-
     Mapper* mapper;
     Reducer* reducer;
-
     std::mutex m;
-    std::mutex shuffledResultsMutex;
-    std::condition_variable cv;
     std::vector<std::thread> mapWorkers;
     std::vector<std::thread> reduceWorkers;
     std::vector<std::pair<std::string, int>> mapOutput;
-    std::unordered_map<std::string, std::vector<int>> shuffledResults;
+    std::unordered_map<std::string, std::vector<int>> shuffledOutput;
+
+    void mapWorker(const std::vector<std::string>& lines, std::vector<std::pair<std::string, int>>& mapOutput) {
+    	for (const auto& line : lines) {
+    			{
+    				std::lock_guard<std::mutex> lock(m);
+    				mapper->map(line, mapOutput);
+    			}
+    		}
+    }
+
+    void reduceWorker(const std::unordered_map<std::string, std::vector<int>>& shuffledResults, long start, long end, std::vector<std::pair<std::string, int>>& output) {
+    	long count = 0;
+
+    	for (const auto& entry : shuffledResults) {
+    		if (count >= start && count < end) {
+    			const std::string& key = entry.first;
+    			const std::vector<int>& values = entry.second;
+
+    			int reducedValue = 0;
+    			reducer->reduce(key, values, reducedValue);
+    			{
+    				std::lock_guard<std::mutex> lock(m);
+    				output.push_back({key, reducedValue}); // @suppress("Invalid arguments")
+    			}
+    		}
+    		++count;
+    	}
+    }
 };
 
 #endif /* MAPREDUCEFRAMEWORK_H_ */

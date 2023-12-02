@@ -1,10 +1,10 @@
-16:16:30 **** Clean-only build of configuration Debug for project MapReduceFramework ****
+04:29:11 **** Clean-only build of configuration Debug for project MapReduceFramework ****
 make clean 
 rm -rf ./src/WordCount/WordCount.d ./src/WordCount/WordCount.o ./src/WordCount/WordCountMapper.d ./src/WordCount/WordCountMapper.o ./src/WordCount/WordCountReducer.d ./src/WordCount/WordCountReducer.o
 rm -rf ./src/MapreduceFramework/MapReduceFramework.d ./src/MapreduceFramework/MapReduceFramework.o
 rm -rf MapReduceFramework
  
-16:16:30 **** Incremental Build of configuration Debug for project MapReduceFramework ****
+04:29:12 **** Incremental Build of configuration Debug for project MapReduceFramework ****
 make all 
 Building file: ../src/WordCount/WordCount.cpp
 Invoking: GCC C++ Compiler

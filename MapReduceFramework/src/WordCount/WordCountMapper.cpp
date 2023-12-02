@@ -18,7 +18,7 @@ private:
 public:
 	void map(const std::string& input, std::vector<std::pair<std::string, int>>& output) {
 		std::istringstream iss(input);
-		while (iss >> word) {
+		while (iss >> word){
 			output.push_back({word, one}); // @suppress("Invalid arguments")
 		}
 	}

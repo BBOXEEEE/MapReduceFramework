@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+template <typename InputType, typename MapOutputKey, typename MapOutputValue>
 class Mapper {
 public:
 	virtual ~Mapper() = default;

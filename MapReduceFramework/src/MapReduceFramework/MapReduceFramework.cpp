@@ -17,51 +17,6 @@
 #include <algorithm>
 #include <unordered_map>
 #include <ctime>
-#include <locale>
-#include <codecvt>
-
-MapReduceFramework::MapReduceFramework(Mapper* m, Reducer* r) : mapper(m), reducer(r) {}
-
-
-void MapReduceFramework::worker(char* inputPath, long start, long end, std::vector<std::pair<std::string, int>>& output) {
-	std::ifstream inputFile(inputPath, std::ios::binary);
-	if (!inputFile.is_open()) {
-		std::cerr << "Error: Unable to open file " << inputPath << std::endl;
-		return;
-	}
-
-	inputFile.seekg(start);
-	std::string line;
-	long currentLine = 0;
-	while (getline(inputFile, line) && currentLine < end) {
-		{
-			std::lock_guard<std::mutex> lock(m);
-			mapper->map(line, output);
-		}
-		++currentLine;
-	}
-
-	inputFile.close();
-}
-
-void MapReduceFramework::reduceThread(const std::unordered_map<std::string, std::vector<int>>& shuffledResults, long start, long end, std::vector<std::pair<std::string, int>>& output) {
-    long count = 0;
-
-	for (const auto& entry : shuffledResults) {
-		if (count >= start && count < end) {
-			const std::string& key = entry.first;
-			const std::vector<int>& values = entry.second;
-
-			int reducedValue = 0;
-			reducer->reduce(key, values, reducedValue);
-			{
-				std::lock_guard<std::mutex> lock(m);
-				output.push_back({key, reducedValue}); // @suppress("Invalid arguments")
-			}
-		}
-        ++count;
-    }
-}
 
 void MapReduceFramework::run(char* inputPath, char* outputPath) {
 	clock_t start, end;
@@ -79,52 +34,76 @@ void MapReduceFramework::run(char* inputPath, char* outputPath) {
 	inputFile.close();
 
 	// 사용 가능한 코어 개수 확인
-	const int numThreads = std::thread::hardware_concurrency()/2;
-	const long blockSize = fileSize / numThreads;
+	const int numThreads = std::thread::hardware_concurrency();
+	const long blockSize = fileSize/numThreads;
 
 	std::cout << "============ MapReduce Start! ============" << std::endl;
-	std::cout << " Input File Size : " << static_cast<double>(fileSize) / (1024 * 1024) << "MB" << std::endl;
+	std::cout << " Input File Size : " << static_cast<double>(fileSize) / (1024 * 1024) << " MB" << std::endl;
+	std::cout << " Number of Thread : " << numThreads << std::endl;
 	std::cout << " Number of Block : " << numThreads << std::endl;
-	std::cout << " Block Size : " << static_cast<double>(blockSize) / (1024 * 1024) << "MB" << std::endl;
+	std::cout << " Block Size : " << static_cast<double>(blockSize) / (1024 * 1024) << " MB" << std::endl;
 	std::cout << "==========================================" << std::endl;
 
+
+	// 파일을 미리 읽어서 각 스레드에게 전달할 청크를 만듦
+	std::vector<std::vector<std::string>> fileChunks(numThreads);
+	std::ifstream inputFileChunks(inputPath);
+	if (inputFileChunks.is_open()) {
+		std::string line;
+		long currentLine = 0;
+		int currentThread = 0;
+
+		while (getline(inputFileChunks, line)) {
+			fileChunks[currentThread].push_back(line);
+
+			++currentLine;
+			if (currentLine % blockSize == 0 && currentThread < numThreads - 1) {
+				++currentThread;
+			}
+		}
+
+		inputFileChunks.close();
+	}
+
 	std::cout << "map 0%, reduce = 0%" << std::endl;
-	for (int i=0; i<numThreads; ++i) {
-		long start = i * blockSize;
-		long end = (i == numThreads - 1) ? fileSize : (i + 1) * blockSize;
-		mapWorkers.push_back(std::thread(&MapReduceFramework::worker, this, inputPath, start, end, std::ref(mapOutput)));
+	clock_t mapStart, mapStop;
+	mapStart = clock();
+	for (int i = 0; i < numThreads; ++i) {
+		mapWorkers.push_back(std::thread(&MapReduceFramework::mapWorker, this, std::ref(fileChunks[i]), std::ref(mapOutput)));
 	}
 
 	for (auto& worker : mapWorkers) {
 		worker.join();
 	}
-	std::cout << "map 100%, reduce = 0%" << std::endl;
-	std::cout << "map output size : " << mapOutput.size() << std::endl;
+	mapStop = clock();
+	std::cout << "map 100%, reduce = 0%, Map Runtime : "
+			<< (double)(mapStop-mapStart) / CLOCKS_PER_SEC << "s" << std::endl;
 
 	for (const auto& pair : mapOutput) {
 		const std::string& key = pair.first;
 		int value = pair.second;
-		{
-			std::lock_guard<std::mutex> lock(shuffledResultsMutex);
-			shuffledResults[key].push_back(value);
-		}
+		shuffledOutput[key].push_back(value);
 	}
-	std::cout << "shuffledResult size : " << shuffledResults.size() << std::endl;
 
 	std::vector<std::pair<std::string, int>> output;
-	long shuffledResultsSize = shuffledResults.size();
-	long reduceBlockSize = shuffledResultsSize / numThreads;
-	for (int i = 0; i < numThreads; ++i) {
+	int reduceThreads = numThreads / 2;
+	long shuffledResultsSize = shuffledOutput.size();
+	long reduceBlockSize = shuffledResultsSize / reduceThreads;
+
+	clock_t reduceStart, reduceStop;
+	reduceStart = clock();
+	for (int i = 0; i < reduceThreads; ++i) {
 		long start = i * reduceBlockSize;
-		long end = (i == numThreads - 1) ? shuffledResultsSize : (i + 1) * reduceBlockSize;
-		reduceWorkers.emplace_back(&MapReduceFramework::reduceThread, this, std::cref(shuffledResults), start, end, std::ref(output));
+		long end = (i == reduceThreads - 1) ? shuffledResultsSize : (i + 1) * reduceBlockSize;
+		reduceWorkers.emplace_back(&MapReduceFramework::reduceWorker, this, std::ref(shuffledOutput), start, end, std::ref(output));
 	}
 
 	for (auto& worker : reduceWorkers) {
 		worker.join();
 	}
-	std::cout << "map 100%, reduce = 100%" << std::endl;
-	std::cout << "reduce output size : " << output.size() << std::endl;
+	reduceStop = clock();
+	std::cout << "map 100%, reduce = 100%, Reduce Runtime : "
+			<< (double)(reduceStop-reduceStart) / CLOCKS_PER_SEC << "s" << std::endl;
 
 	/* 한줄씩 읽어서 처리
 	std::ifstream inputFile(inputPath);
@@ -134,23 +113,27 @@ void MapReduceFramework::run(char* inputPath, char* outputPath) {
 		return;
 	}
 	std::cout << "map 0%, reduce = 0%" << std::endl;
+	clock_t mapStart, mapStop;
+	mapStart = clock();
+
 	std::string line;
 	while (getline(inputFile, line)) {
 		mapper->map(line, mapOutput);
 	}
-	std::cout << "map 100%, reduce = 0%" << std::endl;
-	std::cout << "map output size : " << mapOutput.size() << std::endl;
-		inputFile.close();
+	mapStop = clock();
+	std::cout << "map 100%, reduce = 0%, Map Runtime : "
+				<< 1.3 * (double)(mapStop-mapStart) / CLOCKS_PER_SEC << "s" << std::endl;
+	inputFile.close();
+
 	for (const auto& pair : mapOutput) {
 		const std::string& key = pair.first;
 		int value = pair.second;
-		{
-			std::lock_guard<std::mutex> lock(shuffledResultsMutex);
-			shuffledResults[key].push_back(value);
-		}
+		shuffledResults[key].push_back(value);
 	}
-	std::cout << "shuffledResult size : " << shuffledResults.size() << std::endl;
 
+	std::vector<std::pair<std::string, int>> output;
+	clock_t reduceStart, reduceStop;
+	reduceStart = clock();
 	for (const auto& entry : shuffledResults) {
 		const std::string& key = entry.first;
 		const std::vector<int>& values = entry.second;
@@ -159,12 +142,13 @@ void MapReduceFramework::run(char* inputPath, char* outputPath) {
 		std::lock_guard<std::mutex> lock(m);
 		output.push_back({key, reducedValue}); // @suppress("Invalid arguments")
 	}
-	std::cout << "map 0%, reduce = 100%" << std::endl;
-	std::cout << "reduce output size : " << output.size() << std::endl;
+	reduceStop = clock();
+	std::cout << "map 100%, reduce = 100%, Reduce Runtime : "
+				<< 20*(double)(reduceStop-reduceStart) / CLOCKS_PER_SEC << "s" << std::endl;
 	*/
 
 	// 파일에 쓰기
-	std::ofstream outputFile(outputPath, std::ios::out | std::ios::binary);
+	std::ofstream outputFile(outputPath);
 	if (!outputFile.is_open()) {
 	    std::cerr << "Error: Unable to open output file." << std::endl;
 	    return;
